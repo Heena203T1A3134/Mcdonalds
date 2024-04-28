@@ -1,0 +1,100 @@
+import numpy as np
+import pandas as pd
+from sklearn.cluster import AgglomerativeClustering, KMeans
+from sklearn.mixture import GaussianMixture
+from sklearn.feature_selection import SelectKBest, f_classif
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+from scipy.cluster.hierarchy import dendrogram, linkage
+from sklearn.metrics import silhouette_score, calinski_harabasz_score
+from sklearn.preprocessing import StandardScaler
+
+# step-4: Exploring data
+# Assuming you have a dataset 'data'
+print(data.head())
+print(data.describe())
+
+# step-5-2: Extracting segments: distance-based clustering (hierarchical, partitioning, hybrid approaches)
+# Hierarchical clustering
+linkage_matrix = linkage(data, method='ward')
+plt.figure(figsize=(10, 7))
+dendrogram(linkage_matrix)
+plt.title('Hierarchical Clustering Dendrogram')
+plt.xlabel('Sample index')
+plt.ylabel('Distance')
+plt.show()
+
+# Partitioning clustering (K-Means)
+scaler = StandardScaler()
+data_scaled = scaler.fit_transform(data)
+kmeans = KMeans(n_clusters=5, random_state=42)
+kmeans.fit(data_scaled)
+labels = kmeans.labels_
+silhouette_avg = silhouette_score(data_scaled, labels)
+print(f'Silhouette Score: {silhouette_avg:.2f}')
+
+# step-5-3: Extracting segments: model-based clustering (finite mixture models)
+gmm = GaussianMixture(n_components=5, random_state=42)
+gmm.fit(data_scaled)
+labels = gmm.predict(data_scaled)
+bic = gmm.bic(data_scaled)
+print(f'BIC: {bic:.2f}')
+
+# step-5-4: Extracting segments: algorithms with variable selection (biclustering, VSBD)
+# Biclustering
+from sklearn.cluster import SpectralCoclustering
+model = SpectralCoclustering(n_clusters=5, random_state=42)
+model.fit(data)
+row_labels = np.unique(model.row_labels_)
+col_labels = np.unique(model.column_labels_)
+print(f'Row clusters: {row_labels}')
+print(f'Column clusters: {col_labels}')
+
+# step-5-5: Extracting segments: data structure analysis (cluster indices, gorge plots, global and segment-level stability analysis)
+# Cluster indices
+ch_score = calinski_harabasz_score(data_scaled, labels)
+print(f'Calinski-Harabasz Score: {ch_score:.2f}')
+
+# step-6: Profiling segments (segment profile plot, segment separation plot)
+# Segment profile plot
+segment_means = data.groupby(labels).mean()
+segment_means.plot(kind='bar', figsize=(12, 6))
+plt.title('Segment Profile Plot')
+plt.xlabel('Segment')
+plt.ylabel('Feature Value')
+plt.show()
+
+# Segment separation plot
+pca = PCA(n_components=2)
+data_pca = pca.fit_transform(data_scaled)
+plt.figure(figsize=(8, 6))
+plt.scatter(data_pca[:, 0], data_pca[:, 1], c=labels)
+plt.title('Segment Separation Plot')
+plt.xlabel('PC1')
+plt.ylabel('PC2')
+plt.show()
+
+# step-7: Describing segments (graphics and inference)
+# You can use the segment means and other statistics to describe the segments
+
+# step-8: Selecting (the) target segment(s) (segment evaluation plot)
+# Segment evaluation plot
+from sklearn.linear_model import LogisticRegression
+X = data_scaled
+y = labels
+model = LogisticRegression()
+model.fit(X, y)
+probabilities = model.predict_proba(X)
+plt.figure(figsize=(8, 6))
+plt.scatter(range(len(X)), probabilities[:, 1])
+plt.title('Segment Evaluation Plot')
+plt.xlabel('Sample')
+plt.ylabel('Probability of Belonging to Segment')
+plt.show()
+
+# step-9: Customising the marketing mix
+# Based on the segment profiles, you can customize the marketing mix for each segment
+
+# step-10: Evaluation and monitoring
+# Continuously evaluate the performance of the segmentation and monitor changes in the data
+
